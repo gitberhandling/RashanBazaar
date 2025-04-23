@@ -1,0 +1,84 @@
+@startuml Rashan Bazar Use Case Diagram
+
+skinparam rectangle {
+    roundCorner 25
+}
+
+skinparam usecase {
+    roundCorner 25
+}
+
+' Define actors
+actor "Customer" as customer
+actor "Admin" as admin
+actor "Google OAuth" as google
+
+' Define use cases for Customer
+rectangle "Customer Use Cases" {
+    usecase "Browse Products" as UC1
+    usecase "Add to Cart" as UC2
+    usecase "View Cart" as UC3
+    usecase "Place Order" as UC4
+    usecase "Track Order" as UC5
+    usecase "Sign In" as UC6
+    usecase "Sign In with Google" as UC7
+}
+
+' Define use cases for Admin
+rectangle "Admin Use Cases" {
+    usecase "Manage Products" as UC8
+    usecase "Manage Orders" as UC9
+    usecase "View Reports" as UC10
+}
+
+' Define relationships
+' Customer relationships
+customer --> UC1
+customer --> UC2
+customer --> UC3
+customer --> UC4
+customer --> UC5
+customer --> UC6
+customer --> UC7
+
+' Admin relationships
+admin --> UC8
+admin --> UC9
+admin --> UC10
+
+' Google OAuth relationship
+google --> UC7
+
+' Include relationships
+UC8 ..> UC9 : includes
+
+' Extend relationships
+UC6 ..> UC7 : extends
+
+' Notes
+note right of UC1
+  View and search products
+end note
+
+note right of UC4
+  Checkout and payment
+end note
+
+note right of UC8
+  Add/Edit/Delete products
+end note
+
+' Layout settings
+skinparam componentStyle rectangle
+skinparam component {
+    roundCorner 25
+}
+
+' Set the diagram size to 1:1 ratio
+skinparam width 800
+skinparam height 800
+
+' Center the diagram
+skinparam defaultTextAlignment center
+
+@enduml 

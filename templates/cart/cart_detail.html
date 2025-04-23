@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart - Rashan Bazar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Shopping Cart</h1>
+
+    {% if cart.items.all %}
+    <div class="row">
+        <!-- Cart Items -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    {% for item in cart.items.all %}
+                    <div class="cart-item mb-3 pb-3 border-bottom {% if forloop.last %}border-bottom-0 mb-0 pb-0{% endif %}">
+                        <div class="row align-items-center">
+                            <!-- Product Image -->
+                            <div class="col-3 col-md-2">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-fluid rounded">
+                                {% else %}
+                                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center rounded" style="height: 80px;">
+                                        <i class="fas fa-box fa-2x"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <!-- Product Details -->
+                            <div class="col-9 col-md-10">
+                                <div class="row align-items-center">
+                                    <div class="col-md-5">
+                                        <h5 class="mb-1">{{ item.product.name }}</h5>
+                                        <p class="text-muted mb-0">{{ item.product.category.name }}</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="input-group input-group-sm">
+                                            <button class="btn btn-outline-secondary update-quantity" 
+                                                    data-product-id="{{ item.product.id }}" 
+                                                    data-action="decrease">-</button>
+                                            <input type="number" class="form-control text-center quantity-input" 
+                                                   value="{{ item.quantity }}" min="1" max="99"
+                                                   data-product-id="{{ item.product.id }}">
+                                            <button class="btn btn-outline-secondary update-quantity" 
+                                                    data-product-id="{{ item.product.id }}" 
+                                                    data-action="increase">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        <span class="h6 mb-0">₹{{ item.get_cost }}</span>
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        <button class="btn btn-sm btn-outline-danger remove-item" 
+                                                data-product-id="{{ item.product.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Order Summary</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal</span>
+                        <span>₹{{ cart.get_total_price }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Delivery</span>
+                        <span>Free</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <strong>Total</strong>
+                        <strong>₹{{ cart.get_total_price }}</strong>
+                    </div>
+                    <a href="{% url 'orders:order_create' %}" class="btn btn-primary w-100">
+                        Proceed to Checkout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+        <h2>Your cart is empty</h2>
+        <p class="text-muted">Add some products to your cart and they will appear here.</p>
+        <a href="{% url 'products:product_list' %}" class="btn btn-primary mt-3">
+            Continue Shopping
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update quantity buttons
+    document.querySelectorAll('.update-quantity').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            const action = this.dataset.action;
+            const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+            let quantity = parseInt(input.value);
+
+            if (action === 'increase') {
+                quantity = Math.min(quantity + 1, 99);
+            } else {
+                quantity = Math.max(quantity - 1, 1);
+            }
+
+            updateCartItem(productId, quantity);
+            input.value = quantity;
+        });
+    });
+
+    // Quantity input change
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('change', function() {
+            const productId = this.dataset.productId;
+            let quantity = parseInt(this.value);
+            
+            // Validate quantity
+            if (isNaN(quantity) || quantity < 1) quantity = 1;
+            if (quantity > 99) quantity = 99;
+            
+            updateCartItem(productId, quantity);
+            this.value = quantity;
+        });
+    });
+
+    // Remove item buttons
+    document.querySelectorAll('.remove-item').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            
+            fetch(`/cart/remove/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showNotification('Error removing item from cart.', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error removing item from cart.', 'danger');
+            });
+        });
+    });
+});
+
+function updateCartItem(productId, quantity) {
+    fetch(`/cart/update/${productId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ quantity: quantity })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            showNotification('Error updating cart.', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating cart.', 'danger');
+    });
+}
+</script>
+{% endblock %} 

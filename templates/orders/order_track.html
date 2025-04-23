@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Track Order #{{ order.id }} - Rashan Bazar{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Track Order #{{ order.id }}</h3>
+                    
+                    <!-- Order Status Timeline -->
+                    <div class="timeline mb-4">
+                        <div class="status-line">
+                            {% with status=order.status %}
+                            <div class="status-point {% if status != 'cancelled' %}active{% endif %}">
+                                <div class="status-label">Order Placed</div>
+                                <div class="status-date">{{ order.created|date:"M j, Y" }}</div>
+                            </div>
+                            
+                            <div class="status-point {% if status == 'processing' or status == 'shipped' or status == 'delivered' %}active{% endif %}">
+                                <div class="status-label">Processing</div>
+                                {% if status == 'processing' or status == 'shipped' or status == 'delivered' %}
+                                    <div class="status-date">{{ order.updated|date:"M j, Y" }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="status-point {% if status == 'shipped' or status == 'delivered' %}active{% endif %}">
+                                <div class="status-label">Shipped</div>
+                                {% if status == 'shipped' or status == 'delivered' %}
+                                    <div class="status-date">{{ order.updated|date:"M j, Y" }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="status-point {% if status == 'delivered' %}active{% endif %}">
+                                <div class="status-label">Delivered</div>
+                                {% if status == 'delivered' %}
+                                    <div class="status-date">{{ order.updated|date:"M j, Y" }}</div>
+                                {% endif %}
+                            </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+
+                    <!-- Order Details -->
+                    <div class="order-details">
+                        <h5>Shipping Details</h5>
+                        <p class="mb-1">{{ order.address_line1 }}</p>
+                        {% if order.address_line2 %}
+                            <p class="mb-1">{{ order.address_line2 }}</p>
+                        {% endif %}
+                        <p class="mb-1">{{ order.city }}, {{ order.state }} {{ order.postal_code }}</p>
+                        <p class="mb-3">Phone: {{ order.phone }}</p>
+                        
+                        <h5>Order Information</h5>
+                        <p class="mb-1">Payment Method: {{ order.get_payment_method_display }}</p>
+                        <p class="mb-1">Total Amount: ₹{{ order.total_amount }}</p>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mt-4">
+                        <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-primary">View Order Details</a>
+                        <a href="{% url 'orders:order_list' %}" class="btn btn-secondary">Back to Orders</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add custom CSS for the timeline -->
+{% block extra_css %}
+<style>
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.status-line {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin: 0 40px;
+}
+
+.status-line::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #e9ecef;
+    z-index: 1;
+}
+
+.status-point {
+    position: relative;
+    z-index: 2;
+    background-color: white;
+    padding: 0 10px;
+    text-align: center;
+}
+
+.status-point::before {
+    content: '';
+    width: 30px;
+    height: 30px;
+    background-color: #e9ecef;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+.status-point.active::before {
+    background-color: #28a745;
+}
+
+.status-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.status-date {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+</style>
+{% endblock %}
+{% endblock %} 

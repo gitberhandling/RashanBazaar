@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+{% load static %}
+
+{% block title %}Login - Rashan Bazar{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">Welcome Back</h2>
+                        <p class="text-muted">Sign in to continue shopping</p>
+                    </div>
+
+                    <!-- Google Login Button -->
+                    <div class="d-grid gap-3">
+                        <a href="{% provider_login_url 'google' %}" class="btn btn-outline-dark btn-lg">
+                            <img src="https://www.google.com/favicon.ico" alt="Google" class="me-2" style="width: 20px;">
+                            Continue with Google
+                        </a>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <p class="mb-0">Don't have an account? <a href="{% url 'account_signup' %}" class="text-decoration-none">Sign up</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+}
+
+.btn-outline-dark {
+    border-radius: 10px;
+    padding: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-dark:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn-outline-dark img {
+    vertical-align: middle;
+}
+</style>
+{% endblock %} 

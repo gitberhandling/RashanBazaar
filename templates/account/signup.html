@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load account socialaccount %}
+{% load static %}
+
+{% block head_title %}{% trans "Sign Up" %}{% endblock %}
+
+{% block content %}
+<div class="auth-container py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="auth-card">
+          <div class="card-header">
+            <h1 class="h3 mb-0">{% trans "Sign Up" %}</h1>
+          </div>
+          <div class="card-body">
+            {% get_providers as socialaccount_providers %}
+            
+            {% if socialaccount_providers %}
+            <div class="social-login mb-4">
+              <p class="text-center mb-3">Sign up with:</p>
+              <div class="d-grid gap-2">
+                {% for provider in socialaccount_providers %}
+                  {% if provider.id == "google" %}
+                    <a href="{% provider_login_url provider.id process='signup' %}" 
+                       class="btn btn-outline-dark">
+                      <img src="{% static 'images/google-icon.png' %}" alt="Google" width="20" class="me-2">
+                      Continue with Google
+                    </a>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              <div class="divider my-4">
+                <span class="divider-text">or</span>
+              </div>
+            </div>
+            {% endif %}
+
+            <form class="signup" method="POST" action="{% url 'account_signup' %}">
+              {% csrf_token %}
+              {% if form.errors %}
+                <div class="alert alert-danger">
+                  {% for field in form %}
+                    {% for error in field.errors %}
+                      <p class="mb-0">{{ error }}</p>
+                    {% endfor %}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              
+              <div class="mb-3">
+                <label for="id_email" class="form-label">Email address</label>
+                <input type="email" name="email" id="id_email" class="form-control" required>
+              </div>
+              
+              <div class="mb-3">
+                <label for="id_password1" class="form-label">Password</label>
+                <input type="password" name="password1" id="id_password1" class="form-control" required>
+                <div class="form-text">Password must be at least 8 characters long.</div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="id_password2" class="form-label">Confirm Password</label>
+                <input type="password" name="password2" id="id_password2" class="form-control" required>
+              </div>
+              
+              {% if redirect_field_value %}
+              <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+              {% endif %}
+              
+              <div class="d-grid gap-2 mt-4">
+                <button class="btn btn-primary" type="submit">{% trans "Sign Up" %}</button>
+              </div>
+            </form>
+
+            <div class="mt-4 text-center">
+              <p class="mb-0">
+                {% trans "Already have an account?" %}
+                <a href="{{ login_url }}" class="text-primary">{% trans "Sign In" %}</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.divider {
+  position: relative;
+  text-align: center;
+}
+
+.divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: var(--border-color);
+}
+
+.divider-text {
+  position: relative;
+  background-color: white;
+  padding: 0 1rem;
+  color: #6c757d;
+}
+</style>
+{% endblock %} 
